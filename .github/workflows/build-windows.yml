@@ -1,0 +1,88 @@
+name: Build Windows
+
+on:
+  workflow_dispatch:          # "Run workflow" button on GitHub
+  push:
+    tags: ["v*"]              # pushing a tag like v0.9.0 also publishes a release
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[gui,dev]" pyinstaller
+
+      - name: Tests
+        env:
+          IPSCOPE_NO_KEYRING: "1"
+        run: python -m pytest -q
+
+      - name: Build executables
+        run: pyinstaller packaging/ipscope.spec --noconfirm --clean
+
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $env:IPSCOPE_HOME = "$env:RUNNER_TEMP\ipscope-home"
+          .\dist\IPScope\ipscope.exe --version
+          .\dist\IPScope\ipscope.exe sources
+          if (-not (Test-Path .\dist\IPScope\IPScope.exe)) { throw "IPScope.exe missing" }
+          if (-not (Test-Path .\dist\IPScope\_internal\ipscope\gui\web\index.html)) { throw "UI files missing" }
+
+      - name: Version
+        id: ver
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path ipscope/__init__.py -Pattern '__version__ = "(.+)"').Matches[0].Groups[1].Value
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Installer
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=${{ steps.ver.outputs.version }}" packaging\installer.iss
+
+      - name: Portable zip
+        shell: pwsh
+        run: Compress-Archive -Path dist\IPScope\* -DestinationPath "dist\IPScope-${{ steps.ver.outputs.version }}-portable.zip"
+
+      # Release assets don't count toward the Actions artifact storage quota,
+      # so the downloads are published as a GitHub Release (one per version).
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: IPScope v${{ steps.ver.outputs.version }}
+          make_latest: true
+          body: |
+            **Windows downloads**
+            - `IPScope-Setup-${{ steps.ver.outputs.version }}.exe` - installer (shortcuts, optional PATH entry)
+            - `IPScope-${{ steps.ver.outputs.version }}-portable.zip` - no install: unzip and run `IPScope.exe`
+
+            The desktop app needs the Microsoft Edge WebView2 Runtime (already on Windows 11 and updated Windows 10).
+          files: |
+            dist/installer/*.exe
+            dist/*.zip
+
+      - name: Artifact (optional)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPScope-${{ steps.ver.outputs.version }}-windows
+          path: |
+            dist/installer/*.exe
+            dist/*.zip
+          retention-days: 3

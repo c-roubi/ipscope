@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IPScope</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="tables.css?v=4">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar" class="pywebview-drag-region">
+    <div class="brand">
+      <div class="brand-name">IPScope</div>
+      <div class="brand-version" id="brand-version">v-</div>
+    </div>
+    <div class="nav-sep"></div>
+    <nav id="nav">
+      <button class="nav-btn active" data-page="scan"><span class="icon" data-icon="scan"></span>Scan</button>
+      <button class="nav-btn" data-page="results"><span class="icon" data-icon="results"></span>Results</button>
+      <button class="nav-btn" data-page="history"><span class="icon" data-icon="history"></span>History<span class="badge hidden" id="badge-history"></span></button>
+      <button class="nav-btn" data-page="index"><span class="icon" data-icon="index"></span>Local index</button>
+      <button class="nav-btn" data-page="keys"><span class="icon" data-icon="keys"></span>API Keys</button>
+      <button class="nav-btn" data-page="settings"><span class="icon" data-icon="settings"></span>Settings</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-status"><span class="dot dot-dim" id="status-dot"></span><span id="status-text">Idle</span></div>
+      <div class="sidebar-progress"><div class="health-bar"><div class="health-bar-fill" id="sidebar-bar"></div></div></div>
+      <button class="btn btn-green btn-block" id="sidebar-btn">Start scan</button>
+    </div>
+  </aside>
+  <main id="content"></main>
+</div>
+<div id="toast"></div>
+<div id="modal-root"></div>
+<script src="app.js?v=10"></script>
+</body>
+</html>
