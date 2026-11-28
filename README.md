@@ -1,339 +1,353 @@
-# IPScope v0.9
+# IPScope v0.9.1
 
-أداة Reverse IP Lookup: بتدخلها IP أو نطاق أو دومين، وبترجعلك الدومينات المستضافة عليه من 8 مصادر.
+A Reverse IP lookup tool: give it an IP address, a range, an ASN or a domain, and it returns the domains hosted on it, from several data sources. It has a command-line interface and a desktop app, and it handles tens of thousands of IPs in one run.
 
-## التثبيت (Windows / Linux / macOS)
+## Install (Windows / Linux / macOS)
 
-لازم Python 3.10 أو أحدث.
+Requires Python 3.10 or newer.
 
 ```bash
 cd ipscope
 pip install -e .
 ```
 
-## الواجهة الرسومية (Desktop)
+## Desktop app
 
 ```bash
-pip install -e .[gui]
-ipscope-gui          # أو: ipscope gui
+pip install -e .\[gui]
+ipscope-gui          # or: ipscope gui
 ```
 
-واجهة داكنة بتصميم macOS، مبنية بـ pywebview، وفيها:
+A dark desktop UI built with pywebview:
 
-| الصفحة | شو فيها |
-|---|---|
-| **Scan** | إدخال الأهداف أو استيرادها من ملف، اختيار المصادر والخيارات، تقدم مباشر، وسجل حي |
-| **Results** | قائمة الـ IPs مع المزود ونوع الاستضافة، فلترة حسب الحالة، بحث بالدومين أو العنوان أو التقنية، تجميع حسب الدومين الرئيسي، نسخ، فتح بالمتصفح، وتصدير |
-| **History** | كل الفحوصات، مع إكمال الموقوف وفتحه وحذفه |
-| **API Keys** | إضافة المفاتيح وحذفها، والمصادر بتتفعل تلقائياً بعد إضافة المفتاح |
-| **Settings** | الإعدادات الافتراضية، والكاش، ومجلد البيانات |
+|Page|What it does|
+|-|-|
+|**Scan**|Enter targets or import them from a file, pick a mode and options, live progress and a running log|
+|**Results**|IPs with provider and hosting type, status filters, search by domain, address or technology, group by root domain, copy, open in browser, export|
+|**History**|Every scan, with resume, open and delete|
+|**Local index**|Build and manage your own offline IP → domain index|
+|**API Keys**|Add and remove keys; sources switch on automatically once a key is set|
+|**Settings**|Defaults, data sources, speed options, privacy, cache and data folder|
 
-الفحص بيشتغل بالخلفية. زر Stop بيوقفه، وبتقدر تكمله بعدين من History، والواجهة والـ CLI بيشاركوا نفس قاعدة البيانات.
+Scans run in the background. **Stop** pauses a scan and you can resume it later from History. The app and the CLI share the same database.
 
-## نسخة ويندوز (.exe)
+## Windows build (.exe)
 
-البناء بيطلّع مجلد `IPScope` فيه برنامجين بيتشاركوا نفس الملفات:
-- **`IPScope.exe`**: الواجهة الرسومية، بدون نافذة أوامر
-- **`ipscope.exe`**: سطر الأوامر
+The build produces an `IPScope` folder with two programs that share the same files:
 
-وبيطلّع كمان مثبّت `IPScope-Setup-x.y.z.exe`. المثبّت بيعمل اختصارات بقائمة ابدأ وسطح المكتب، وفيه خيار يضيف `ipscope` للـ PATH، وبيفحص إذا WebView2 موجود على الجهاز.
+* **`IPScope.exe`**: the desktop app, no console window
+* **`ipscope.exe`**: the command line
 
-### الطريقة 1: على جهاز ويندوز
+It also produces an installer, `IPScope-Setup-x.y.z.exe`, which creates Start menu and desktop shortcuts, can add `ipscope` to your PATH, and checks that WebView2 is installed.
 
-1. ثبّت Python 3.10 أو أحدث من python.org، وعلّم على **Add to PATH** وقت التثبيت.
-2. إذا بدك المثبّت كمان، ثبّت Inno Setup 6.
-3. شغّل:
-   ```bat
-   packaging\build.bat
+### Option 1: build on a Windows machine
+
+1. Install Python 3.10+ from python.org and tick **Add to PATH**.
+2. For the installer as well, install Inno Setup 6.
+3. Run:
+
+```bat
+   packaging\\build.bat
    ```
 
-النتيجة بتطلع بـ `dist\IPScope\` (البرنامج) و `dist\installer\` (المثبّت).
+The output goes to `dist\\IPScope\\` (the program) and `dist\\installer\\` (the installer).
 
-### الطريقة 2: GitHub Actions (بدون ما تثبّت أي شي)
+### Option 2: GitHub Actions (nothing to install)
 
-1. ارفع المشروع على مستودع GitHub.
-2. من تبويب **Actions**، اختار **Build Windows** واضغط **Run workflow**.
-3. لما يخلص، بتلاقي تحت **Artifacts** المثبّت ونسخة portable بملف zip.
+1. Push the project to a GitHub repository.
+2. In the **Actions** tab, choose **Build Windows**; it also runs on every push.
+3. When it finishes, the installer and a portable zip are published as a **Release** (named after the version in `pyproject.toml`).
 
-وإذا رفعت tag، مثلاً `git tag v0.9.0 && git push --tags`، بينشر الملفات كـ Release.
+### Notes
 
-### ملاحظات
+* **WebView2:** the app needs the Microsoft Edge WebView2 Runtime. It is included in Windows 11 and updated Windows 10. On Windows Server it usually has to be installed by hand. Without it the window opens unstyled and does nothing.
+* **Antivirus:** programs built with PyInstaller are sometimes flagged by mistake. UPX is not used and version info is embedded to reduce this. The complete fix is signing the files with a code-signing certificate, especially if you distribute them.
+* **Start-up errors:** if the app does not open, details are saved to `%USERPROFILE%\\.ipscope\\gui-error.log`.
 
-- **WebView2:** الواجهة بتحتاج Microsoft Edge WebView2 Runtime. هو موجود على ويندوز 11 وعلى ويندوز 10 المحدّث.
-- **الأنتي فايروس:** البرامج المبنية بـ PyInstaller أحياناً بيعلّم عليها الأنتي فايروس بالغلط. خففت هالشي بإني ما استخدمت UPX وضفت معلومات الإصدار للملف. الحل الكامل هو **توقيع الملف بشهادة Code Signing**، خصوصاً إذا بدك توزعه.
-- **أخطاء التشغيل:** إذا الواجهة ما فتحت، تفاصيل الخطأ بتنحفظ بـ `%USERPROFILE%\.ipscope\gui-error.log`.
-
-## تجهيز قائمة IPs عليها مواقع كثيرة
+## Finding IPs that host many sites
 
 ```bash
 ipscope scan AS47583 --max-hosts 2048 --preset fast --label hostinger   # Hostinger
 ipscope scan AS22612 --max-hosts 2048 --preset fast --label namecheap   # Namecheap
-ipscope top -n 100 --min-domains 200 -o busy_ips.txt                    # أعلى 100 IP، بدون CDN
+ipscope top -n 100 --min-domains 200 -o busy\_ips.txt                    # top 100 IPs, no CDN
 ```
 
-## الاستخدام السريع (CLI)
+## Quick start (CLI)
 
 ```bash
-ipscope scan 8.8.8.8                          # IP واحد
-ipscope scan 1.2.3.0/28                       # نطاق CIDR
-ipscope scan example.com                      # دومين (بيحوله لـ IP أول)
-ipscope scan AS24940 --max-hosts 4096         # كل نطاقات ASN
-ipscope scan -f ips.txt -o results.csv        # من ملف، وحفظ CSV
-ipscope scan 8.8.8.8 -V                       # تأكد مين لسا على نفس الـ IP
+ipscope scan 8.8.8.8                          # one IP
+ipscope scan 1.2.3.0/28                       # a CIDR range
+ipscope scan example.com                      # a domain (resolved to its IP first)
+ipscope scan AS24940 --max-hosts 4096         # every range of an ASN
+ipscope scan -f ips.txt -o results.csv        # from a file, save as CSV
+ipscope scan 8.8.8.8 -V                       # check who is still on the same IP
 ipscope scan 8.8.8.8 --only-active -o live.txt
-ipscope scan 8.8.8.8 --active                 # يقرأ شهادة TLS من السيرفر
-ipscope scan -f ips.txt -q > domains.txt      # دومينات بس
+ipscope scan 8.8.8.8 --active                 # read TLS certificates from the server
+ipscope scan -f ips.txt -q > domains.txt      # domains only
 ```
 
-## معلومات الـ IP وكشف الـ CDN
+## IP info and CDN detection
 
-كل IP بينعرف تلقائياً شو الـ ASN تبعه ومين مزوده، عبر Team Cymru DNS. هاد مجاني وبدون مفتاح، ولو بدك توقفه استخدم `--no-ip-info`. وبيتصنف لنوع من هدول:
+Every IP is looked up for its ASN and provider through Team Cymru DNS. This is free and needs no key; turn it off with `--no-ip-info`. Each IP is classified as one of:
 
-| النوع | المعنى |
-|---|---|
-| `cdn-edge` | الـ IP تابع لـ CDN (Cloudflare، Akamai، Fastly، Imperva…). النتائج مواقع ما إلها علاقة ببعض، والسيرفر الحقيقي مخفي |
-| `shared` | 50 دومين أو أكثر: استضافة مشتركة |
-| `multi-site` | من 5 لـ 49 دومين |
-| `single-site` | من 1 لـ 4 دومينات |
+|Type|Meaning|
+|-|-|
+|`cdn-edge`|The IP belongs to a CDN (Cloudflare, Akamai, Fastly, Imperva…). The results are unrelated sites and the real server is hidden|
+|`shared`|50 or more domains: shared hosting|
+|`multi-site`|5 to 49 domains|
+|`single-site`|1 to 4 domains|
 
-الأداة بتطلع تحذير واضح لما يكون الـ IP تابع لـ CDN.
+A clear warning is shown when an IP belongs to a CDN.
 
-## إدخال ASN
+## ASN input
 
-`ipscope scan AS13335` بيجيب كل نطاقات الـ IPv4 المعلنة للـ ASN من RIPEstat. هاد كمان مجاني وبدون مفتاح.
-- الحد الكلي بيتحكم فيه `--max-hosts`، والنطاقات الأصغر بتنفحص أول.
-- نطاقات IPv6 بتنتخطى لأنها كبيرة كثير.
+`ipscope scan AS13335` fetches every IPv4 range announced by the ASN from RIPEstat. Also free, no key.
 
-## فحص المواقع (`--probe`)
+* The total size is capped by `--max-hosts`; smaller ranges are scanned first.
+* IPv6 ranges are skipped because they are far too large to enumerate.
+
+## Website probe (`--probe`)
 
 ```bash
 ipscope scan 5.9.10.10 -V --probe -o report.csv
 ```
 
-لكل دومين بيجيب: كود الـ HTTP، والرابط النهائي بعد التحويلات، وعنوان الصفحة (بيدعم العربي)، والـ Server، والتقنيات المستخدمة.
-- **التقنيات:** بيكشف حوالي 40 تقنية، مثل WordPress و Laravel و Next.js و Shopify و Cloudflare و nginx… ومع `-V` بيفحص بس الدومينات الـ active.
-- **الحد:** `--probe-limit 200` لكل IP، والأعلى ثقة بينفحص أول.
-- **ملاحظة:** هاد **فحص active**، يعني بيتصل بالمواقع نفسها.
+For each domain it records the HTTP status, the final URL after redirects, the page title (Arabic supported), the Server header and the technologies in use.
 
-## طرق مجانية بدون أي API
+* **Technologies:** about 40 are detected, such as WordPress, Laravel, Next.js, Shopify, Cloudflare and nginx. With `-V` only active domains are probed.
+* **Limit:** `--probe-limit 200` per IP; the highest-confidence domains go first.
+* **Note:** this is an **active** check, so it contacts the sites themselves.
 
-### 1. التواصل مع السيرفر مباشرة (`--active`)
+## Free methods with no API
+
+### 1\. Contact the server directly (`--active`)
 
 ```bash
 ipscope scan 5.9.10.10 --active
 ```
 
-- **`tls`:** بيقرأ شهادات TLS من 10 بورتات بنفس الوقت:
-  - الويب: 443، 8443
-  - cPanel و WHM و Webmail: 2083، 2087، 2096
-  - الإيميل: 465، 993، 995
-  - SMTP مع STARTTLS: 25، 587، ومنه كمان بيقرأ اسم السيرفر من رسالة الترحيب
-- **`http`:** بيطلب `http(s)://IP` مباشرة، وبيلتقط التحويلات (redirect) وروابط `canonical` و `og:url`.
-- **الشهادات الافتراضية** (`localhost.localdomain`، `default.domain`، Traefik، Kubernetes…) بتنفلتر تلقائياً.
+* **`tls`** reads TLS certificates on 10 ports at once:
 
-هاي الطريقة ممتازة للسيرفرات اللي عليها موقع واحد أو كم موقع. بس على الاستضافة المشتركة بتكشف الموقع الافتراضي بس.
+  * Web: 443, 8443
+  * cPanel, WHM and Webmail: 2083, 2087, 2096
+  * Mail: 465, 993, 995
+  * SMTP with STARTTLS: 25, 587 (the server name is also read from the greeting)
+* **`http`** requests `http(s)://IP` directly and picks up redirects, `canonical` links and `og:url`.
+* **Default certificates** (`localhost.localdomain`, `default.domain`, Traefik, Kubernetes…) are filtered out automatically.
 
-### 2. فهرس محلي خاص فيك (`local`)
+This works well for servers hosting one or a few sites. On shared hosting it only reveals the default site.
+
+### 2\. Your own local index (`local`)
 
 ```bash
-ipscope index build domains.txt            # استيراد + resolve
-ipscope index add com.zone.gz              # ملف zone (مثلاً من ICANN CZDS)
-ipscope index add fdns_a.json.gz --only 5.9.0.0/16 --only 51.75.0.0/16   # Rapid7 FDNS، نطاقاتك بس
-ipscope index resolve                      # بيكمل من وين وقف (Ctrl+C آمن)
-ipscope index resolve --retry-failed       # بيعيد اللي فشلوا
-ipscope index resolve --refresh-days 30    # بيحدّث الأسماء القديمة
+ipscope index build domains.txt            # import + resolve
+ipscope index add com.zone.gz              # a zone file (e.g. from ICANN CZDS)
+ipscope index add fdns\_a.json.gz --only 5.9.0.0/16 --only 51.75.0.0/16   # Rapid7 FDNS, your ranges only
+ipscope index resolve                      # resumes where it stopped (Ctrl+C is safe)
+ipscope index resolve --retry-failed       # retry the ones that failed
+ipscope index resolve --refresh-days 30    # refresh old names
 ipscope index stats
 ipscope index lookup 5.9.10.10
+ipscope index top -n 100 -o busiest.txt    # IPs with the most domains in the index
 ```
 
-بعد ما تبني الفهرس، مصدر `local` بيتفعل تلقائياً ببداية كل فحص. بيرد فوراً، بدون إنترنت، وبدون حدود. ومن الواجهة الرسومية، صفحة **Local index** بتعمل نفس الشي.
+Once the index has data, the `local` source is on automatically at the start of every scan. It answers instantly, offline, with no limits. The **Local index** page in the app does the same things.
 
-أرقام مقاسة (مع DNS وهمي بيرد بعد 50ms):
+**Local index first.** When the index already knows an IP, the answer comes from it and the online sources are skipped for that IP; IPs it does not know fall through to the other sources as usual. This is on by default (**Settings → Local index first**, or `--no-local-first` on the CLI) and applies to every mode, not only Offline.
 
-| العملية | السرعة |
-|---|---|
-| استيراد مليون دومين | 5.9 ثانية |
-| استيراد مليون سجل Rapid7 FDNS | 9.5 ثانية (بدون resolve) |
-| Resolve | ~8,900 اسم/ثانية، يعني مليون اسم بحوالي دقيقتين |
-| البحث بالفهرس | ~136,000 IP/ثانية |
-| حجم الفهرس | ~232 MB لكل 2 مليون اسم |
+Measured numbers (with a fake DNS that answers after 50 ms):
 
-> ملف Rapid7 الكامل (fdns_a) حجمه أكثر من 30 GB مضغوط. استخدم `--only` بنطاقاتك حتى يضل الفهرس صغير.
+|Operation|Speed|
+|-|-|
+|Import 1 million domains|5.9 s|
+|Import 1 million Rapid7 FDNS records|9.5 s (no resolve)|
+|Resolve|\~8,900 names/s, so a million names in about two minutes|
+|Index lookups|\~136,000 IPs/s|
+|Index size|\~232 MB per 2 million names|
 
-## الأداء مع عشرات آلاف الـ IPs
+> The full Rapid7 `fdns\_a` file is over 30 GB compressed. Use `--only` with your own ranges to keep the index small.
 
-أرقام مقاسة بمصادر وهمية بترد فوراً، حتى تبيّن سرعة الأداة نفسها بدون الـ APIs:
+## Performance with tens of thousands of IPs
 
-| الحالة | النتيجة |
-|---|---|
-| 50,000 IP (250 ألف دومين) | 18.7 ثانية، والذاكرة ثابتة ~95 MB |
-| 2,000 IP على استضافة مشتركة (600 ألف دومين) | 26.6 ثانية، والذاكرة ~108 MB |
-| التحقق من الـ DNS (`-V`) | ~3,800 دومين/ثانية (كان 119) |
-| فتح 600 ألف دومين بالواجهة | أقل من ثانية. البحث والتنقل بين الصفحات من 0.1 لـ 1.5 ثانية |
-| تصدير CSV لـ 600 ألف سطر | 3.5 ثانية، بدون ما تزيد الذاكرة |
+Measured with instant fake sources, to show the speed of the tool itself without any API:
 
-كيف صارت هيك:
-- **التخزين:** كل دومين بيتخزن كسطر بقاعدة البيانات. الواجهة والـ CLI والتصدير بيقرأوا منها صفحة صفحة، أو بشكل متدفق (stream).
-- **التحقق من الـ DNS:** بيستخدم dnspython async، 200 استعلام بنفس الوقت، مع كاش، وإذا الدومين بيظهر على أكثر من IP بينسأل عنه مرة وحدة بس. إذا الاستعلام فشل (timeout)، الدومين بيتصنف `unknown` مش `dead`.
-- **المصدر اللي حصته بتخلص أو مفاتيحه كلها بتنرفض** بيتوقف لباقي الفحص بدل ما يفشل مع كل IP. وإذا كل المصادر توقفت، الفحص بيوقف ومنقدر نكمله بعدين.
-- **الـ CLI مع الفحوصات الكبيرة** بيعرض ملخص وأعلى الـ IPs بس، والنتائج الكاملة بتطلع بـ `-o` أو `-q`.
+|Case|Result|
+|-|-|
+|50,000 IPs (250k domains)|18.7 s, flat memory \~95 MB|
+|2,000 shared-hosting IPs (600k domains)|26.6 s, memory \~108 MB|
+|DNS validation (`-V`)|\~3,800 domains/s (was 119)|
+|Opening 600k domains in the app|under 1 s; search and paging take 0.1 to 1.5 s|
+|CSV export of 600k rows|3.5 s, with no memory growth|
 
-**ملاحظة:** السرعة الحقيقية بتعتمد على حدود الـ APIs. بالمصادر المجانية (1 طلب/ثانية)، 50 ألف IP بياخدوا حوالي 14 ساعة.
+How it works:
 
-## الدومينات الرئيسية والثقة
+* **Storage:** every domain is stored as a row in the database. The app, the CLI and the exports read from it page by page, or as a stream.
+* **DNS validation:** async dnspython, 200 queries at once, with a cache; a domain that appears on several IPs is asked about only once. A failed query (timeout) marks the domain `unknown`, not `dead`.
+* **A source that runs out of quota, or whose keys are all rejected,** is switched off for the rest of the scan instead of failing on every IP. If every source stops, the scan stops and can be resumed later.
+* **The CLI on big scans** prints a summary and the top IPs only; the full results go out with `-o` or `-q`.
 
-- `--roots` بيجمع النتائج حسب الدومين الرئيسي، مثل `shop.example.co.uk` → `example.co.uk`. بيعتمد على Public Suffix List، وبيشتغل بدون إنترنت.
-- **الثقة (0-100):** بتعتمد على عدد المصادر اللي أكدت الدومين، وحالته بالـ DNS.
-  - مصدر واحد = 40، مصدرين = 65، ثلاثة أو أكثر = 85
-  - active بيزيد 15، historical بينقص 15، dead بينقص 30
+**Note:** real speed depends on the APIs' limits. With free sources (1 request/s), 50,000 IPs take about 14 hours.
+
+## Root domains and confidence
+
+* `--roots` groups results by root domain, e.g. `shop.example.co.uk` becomes `example.co.uk`. It uses the Public Suffix List and works offline.
+* **Confidence (0-100):** based on how many sources confirmed the domain and its DNS status.
+
+  * One source = 40, two = 65, three or more = 85
+  * active adds 15, historical subtracts 15, dead subtracts 30
 
 ```bash
 ipscope scan 5.9.10.10 --roots -q > roots.txt
 ```
 
-## التوقيف والإكمال
+## Stop and resume
 
-كل IP بيخلص فحصه بينحفظ فوراً بقاعدة البيانات.
+Every IP is saved to the database the moment it finishes.
 
 ```bash
-ipscope scan -f big_list.txt --label "client-x"   # اضغط Ctrl+C بأي وقت
-ipscope resume                                    # بيكمل آخر فحص ما خلص
-ipscope resume 7                                  # أو فحص معين
-ipscope history                                   # كل الفحوصات
-ipscope show 7 -o report.json                     # تصدير فحص قديم
+ipscope scan -f big\_list.txt --label "client-x"   # press Ctrl+C at any time
+ipscope resume                                    # continues the last unfinished scan
+ipscope resume 7                                  # or a specific one
+ipscope history                                   # all scans
+ipscope show 7 -o report.json                     # export an old scan
 ipscope delete 7
 ```
 
-إذا انطفى الجهاز أو كرش البرنامج، `resume` بيكمل كمان.
+If the machine shuts down or the program crashes, `resume` still works.
 
-## الكاش
+## Cache
 
-نتيجة كل مصدر لكل IP بتنحفظ 24 ساعة، فإعادة الفحص ما بتصرف من حدود الـ API.
+Each source's answer for each IP is kept for 24 hours, so re-scanning does not use up API limits.
 
 ```bash
-ipscope scan 8.8.8.8 --cache-ttl 72      # مدة الكاش بالساعات
-ipscope scan 8.8.8.8 --no-cache          # تجاهل الكاش
+ipscope scan 8.8.8.8 --cache-ttl 72      # cache lifetime in hours
+ipscope scan 8.8.8.8 --no-cache          # ignore the cache
 ipscope cache stats
 ipscope cache clear --older-than 168
 ```
 
-الأخطاء ما بتنحفظ بالكاش، فالطلب الفاشل بيتعاد بالمرة الجاية.
+Errors are never cached, so a failed request is retried next time.
 
-## مفاتيح الـ API
+## API keys
 
 ```bash
-ipscope keys set virustotal                # بيطلب المفتاح مخفي
-ipscope keys set virustotal KEY2 --add     # مفتاح إضافي للتدوير
-ipscope keys list                          # بيعرضهم مقنّعين: abcd…1234
+ipscope keys set virustotal                # prompts for the key (hidden)
+ipscope keys set virustotal KEY2 --add     # an extra key for rotation
+ipscope keys list                          # shown masked: abcd…1234
 ipscope keys delete shodan
 ```
 
-- **التخزين:** بـ Windows Credential Manager أو macOS Keychain. إذا ما في keyring بالنظام، بتنحفظ بـ `~/.ipscope/keys.json` بصلاحيات للمالك بس.
-- **متغيرات البيئة** بتغلب على المخزّن، مثل `IPSCOPE_VIRUSTOTAL_KEY=k1,k2`.
-- **التدوير:** إذا مفتاح انرفض (401/403)، أو انتهت حصته (429، أو "API count exceeded" بـ HackerTarget)، الأداة بتنتقل للمفتاح اللي بعده تلقائياً.
-- **المصادر اللي بتحتاج مفتاح** بتنضاف للفحص تلقائياً لما تحطلها مفتاح، وبدونه بتنتخطى مع تنبيه.
+* **Storage:** Windows Credential Manager or macOS Keychain. With no system keyring, keys are kept in `\~/.ipscope/keys.json`, readable by the owner only.
+* **Environment variables** override stored keys, e.g. `IPSCOPE\_VIRUSTOTAL\_KEY=k1,k2`.
+* **Rotation:** if a key is rejected (401/403) or its quota is used up (429, or "API count exceeded" on HackerTarget), the next key is used automatically.
+* **Sources that need a key** are added to the scan automatically once a key is set, and skipped with a notice otherwise.
 
-## المصادر
+## Sources
 
-| المصدر | المفتاح | ملاحظات |
-|---|---|---|
-| `local` | - | فهرسك المحلي: فوري وبدون حدود (`ipscope index build`) |
-| `dnsrift` | اختياري | DNSRift API، مجاني بدون مفتاح |
-| `thc` | - | ip.thc.org، مجاني بدون مفتاح، قاعدة بيانات ضخمة. حده حوالي 0.5 طلب/ثانية |
-| `hackertarget` | اختياري | المجاني 20 استعلام باليوم |
-| `otx` | اختياري | AlienVault passive DNS، وفيه تاريخ first/last seen |
-| `internetdb` | - | Shodan InternetDB، مجاني |
-| `ptr` | - | Reverse DNS |
-| `webscan` | - | webscan.cc، مجاني بس ما إله توثيق رسمي. **مش مفعّل افتراضياً** |
-| `virustotal` | **لازم** | passive DNS، المجاني 4 طلبات/دقيقة |
-| `securitytrails` | **لازم** | |
-| `shodan` | **لازم** | |
-| `rapiddns` | **لازم** | الـ API الرسمي، بده عضوية Pro |
-| `networksdb` | **لازم** | الـ API الرسمي، المفتاح المجاني 1,000 طلب بالشهر |
-| `tls` / `http` | - | **active**: بيتصلوا بالسيرفر نفسه (`--active`) |
+|Source|Key|Notes|
+|-|-|-|
+|`local`|-|Your local index: instant, no limits (`ipscope index build`)|
+|`dnsrift`|optional|DNSRift API, free without a key|
+|`thc`|-|ip.thc.org, free without a key, very large database. Limit about 0.5 requests/s|
+|`hackertarget`|optional|The free tier allows 20 queries a day|
+|`otx`|optional|AlienVault passive DNS, with first/last seen dates|
+|`internetdb`|-|Shodan InternetDB, free|
+|`ptr`|-|Reverse DNS|
+|`webscan`|-|webscan.cc, free but not officially documented. **Off by default**|
+|`virustotal`|**required**|Passive DNS, the free tier allows 4 requests/minute|
+|`securitytrails`|**required**||
+|`shodan`|**required**||
+|`rapiddns`|**required**|The official API, needs a Pro membership|
+|`networksdb`|**required**|The official API, the free key gives 1,000 requests a month|
+|`tls` / `http`|-|**Active**: they connect to the server itself (`--active`)|
 
-### الأوضاع الجاهزة (Presets)
+### Modes (presets)
 
 ```bash
-ipscope scan -f ips.txt --preset fast      # أسرع المصادر الكبيرة بس
-ipscope scan -f ips.txt --preset free      # كل المصادر المجانية الـ passive
-ipscope scan -f ips.txt --preset full      # كل اللي مجهّز عندك، ومعه tls و http
-ipscope scan -f ips.txt --preset offline   # الفهرس المحلي بس، بدون شبكة
+ipscope scan -f ips.txt --preset fast      # only the fastest large sources
+ipscope scan -f ips.txt --preset free      # every free passive source
+ipscope scan -f ips.txt --preset full      # everything you have set up, plus tls and http
+ipscope scan -f ips.txt --preset offline   # local index only, no network
 ```
 
-ونفس الأوضاع موجودة كأزرار فوق قائمة المصادر بالواجهة الرسومية.
+The same modes are buttons on the Scan page of the app.
 
-## خيارات السرعة والعرض
+## Speed and display options
 
-| الخيار | بالواجهة (Settings) | بالـ CLI |
-|---|---|---|
-| حفظ الدومين الرئيسي بس | Save root domains only | `--roots-only` |
-| الوقوف عند أول مصدر بيلاقي نتائج | Stop at the first match | `--first-hit` |
-| تخطي الـ IPs اللي انفحصت قبل | Skip IPs scanned before | `--skip-scanned` |
-| إخفاء أسماء المصادر (لتصوير الشاشة) | Hide source names | - |
+|Option|In the app (Settings)|CLI|
+|-|-|-|
+|Local index answers first|Local index first|`--local-first` / `--no-local-first`|
+|Keep root domains only|Save root domains only|`--roots-only`|
+|Stop at the first source that finds results|Stop at the first match|`--first-hit`|
+|Skip IPs scanned before|Skip IPs scanned before|`--skip-scanned`|
+|Hide source names (for screen recording)|Hide source names|-|
+|Save every domain to `results.txt`|Save every domain to results.txt|always on (`IPSCOPE\_NO\_RESULTS\_TXT=1` to disable)|
 
-- **حفظ الدومين الرئيسي:** الدومين الرئيسي بياخد أفضل حالة من فروعه. يعني إذا `shop.example.com` شغال على الـ IP، بيتسجل `example.com` كـ active.
-- **إخفاء المصادر:** بيشيل أسماء المصادر من صفحة الفحص والنتائج والسجل والقائمة الجانبية وملفات التصدير. اختيار المصادر نفسه صار بصفحة Settings، وصفحة الفحص فيها أزرار الأوضاع بس.
+* **Root domains only:** the root domain takes the best status of its subdomains. If `shop.example.com` is live on the IP, `example.com` is recorded as active.
+* **Hide source names:** removes source names from the scan page, results, log, sidebar and exports. Choosing sources lives in Settings; the Scan page only has the mode buttons. The scan log never shows provider or CDN names; those are on the Results page.
+* **`results.txt`:** every domain found is appended, one per line, to `\~/.ipscope/results.txt`. The file only grows: nothing is removed from it, even when you delete scans from History. A domain is not repeated within one run, but a later run can add it again.
 
-## الدومينات الفرعية (Subdomains)
+## Subdomains
 
 ```bash
-ipscope subdomains example.com                 # من local و dnsrift و thc و otx و crt.sh و rapiddns
-ipscope subdomains example.com -V -o subs.csv  # مع resolve: مين شغال وعلى أي IP
+ipscope subdomains example.com                 # from local, dnsrift, thc, otx, crt.sh and rapiddns
+ipscope subdomains example.com -V -o subs.csv  # with resolve: which are live, and on which IP
 ipscope subdomains -f domains.txt -q > all.txt
 ```
 
-هاد بحث passive بالكامل، يعني ما في ولا طلب بيوصل للدومين المستهدف نفسه.
+This is entirely passive: nothing is sent to the target itself.
 
-كل مصدر إله rate limit خاص فيه، وبيعيد المحاولة مع انتظار بيزيد كل مرة.
+Each source has its own rate limit and retries with a growing wait.
 
-## حالات الدومين (مع `-V`)
+## Domain status (with `-V`)
 
-- **active**: لسا بيشاور على نفس الـ IP
-- **historical**: كان عليه وانتقل
-- **dead**: ما إله سجل DNS
+* **active**: still points to the same IP
+* **historical**: used to be on it and moved away
+* **dead**: has no DNS record
 
-## التصدير
+## Export
 
-الصيغة بتنحدد من امتداد الملف:
-- `.txt`: دومينات بس
-- `.csv`: بيفتح بـ Excel مباشرة. فيه ASN والمزود ونوع الاستضافة والدومين الرئيسي والثقة، ونتائج الـ probe
-- `.json`: كامل مع الأخطاء
+The format follows the file extension:
 
-## البيانات والبروكسي
+* `.txt`: domains only
+* `.csv`: opens straight in Excel. Includes ASN, provider, hosting type, root domain, confidence and probe results
+* `.json`: complete, with errors
 
-- كل شي بـ `~/.ipscope/` (قاعدة البيانات `ipscope.db`). تقدر تغيرها بـ `--home PATH` أو `IPSCOPE_HOME`.
-- البروكسي: الأداة بتحترم `HTTPS_PROXY` و `HTTP_PROXY`.
+## Data and proxy
 
-## إضافة مصدر جديد
+* Everything lives in `\~/.ipscope/` (database `ipscope.db`, index `index.db`, domain list `results.txt`). Change the location with `--home PATH` or `IPSCOPE\_HOME`.
+* Proxy: the tool respects `HTTPS\_PROXY` and `HTTP\_PROXY`.
+
+## Adding a source
 
 ```python
 # ipscope/sources/mysource.py
 class MySource(Source):
     name = "mysource"
-    rate = 1.0                        # طلبات بالثانية
-    key_env = "IPSCOPE_MYSOURCE_KEY"
-    requires_key = True
+    rate = 1.0                        # requests per second
+    key\_env = "IPSCOPE\_MYSOURCE\_KEY"
+    requires\_key = True
 
-    def _auth(self, key):             # (params, headers) لكل طلب
+    def \_auth(self, key):             # (params, headers) for every request
         return {}, {"X-Key": key}
 
-    async def _lookup(self, ip):
-        data = await self._fetch(f"https://api.example/{ip}", as_json=True)
-        return [DomainRecord(d, self.name) for d in (data or {}).get("domains", [])]
+    async def \_lookup(self, ip):
+        data = await self.\_fetch(f"https://api.example/{ip}", as\_json=True)
+        return \[DomainRecord(d, self.name) for d in (data or {}).get("domains", \[])]
 ```
 
-بعدين ضيفه لـ `REGISTRY` بـ `ipscope/sources/__init__.py`. الـ retry والتدوير والكاش بيشتغلوا لحالهم.
+Then add it to `REGISTRY` in `ipscope/sources/\_\_init\_\_.py`. Retry, key rotation and caching work on their own.
 
-## الاختبارات
+## Tests
 
 ```bash
 pip install pytest
 pytest -q
 ```
 
-الاختبارات ما بتلمس الـ keyring الحقيقي تبع جهازك.
+The tests never touch your real keyring.
 
-## ملاحظة
+## Disclaimer
 
-استخدمها فقط على أهداف عندك إذن تفحصها، والتزم بشروط استخدام كل API.
+Use it only on targets you are authorized to scan, and follow each API's terms of service.
+
